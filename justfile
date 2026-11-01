@@ -5,6 +5,7 @@ build:
   mkdir build
   pnpm build
   mv dist build
+  cp -r py_modules build
   cp LICENSE build
   cp main.py build
   cp package.json build
