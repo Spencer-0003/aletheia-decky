@@ -20,6 +20,9 @@ class Plugin:
         self.engine = Engine()
         self.settings = SettingsStore(Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / 'settings.json')
 
+    async def is_installed(self) -> bool:
+        return await self.engine.is_installed()
+
     async def get_settings(self) -> dict[str, bool]:
         return self.settings.all()
 

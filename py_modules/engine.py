@@ -34,6 +34,9 @@ class Engine:
 
         return shlex.join([flatpak, 'run', FLATPAK_ID]) if result.returncode == 0 else None
 
+    async def is_installed(self) -> bool:
+        return self.command is not None
+
     async def on_launch(self, app_id: str):
         pass
 
