@@ -1,11 +1,38 @@
 // SPDX-FileCopyrightText: 2026 Spencer
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import { toaster } from '@decky/api';
+import { getSettings, setSetting, type Settings } from '../api';
 import { ButtonItem, PanelSection, PanelSectionRow, ToggleField } from '@decky/ui';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function Panel() {
   const [busy, setBusy] = useState(false);
+  const [settings, setSettings] = useState<Settings | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getSettings()
+      .then(s => {
+        if (!cancelled) setSettings(s)
+      })
+
+    return () => {
+      cancelled = true;
+    }
+  }, []);
+
+  const update = async (key: keyof Settings, value: boolean) => {
+    setSettings(current => (current ? { ...current, [key]: value } : current));
+
+    try {
+      setSettings(await setSetting(key, value))
+    } catch (e) {
+      setSettings(current => (current ? { ...current, [key]: !value } : current));
+      toaster.toast({ title: 'Error', body: 'Failed to save configuration.' });
+    }
+  }
 
   return (
     <>
@@ -13,13 +40,17 @@ export function Panel() {
         <PanelSectionRow>
           <ToggleField
             label='Back up when a game exits'
-            checked={false}
+            checked={settings?.auto_backup ?? false}
+            disabled={!settings}
+            onChange={v => update('auto_backup', v)}
           />
         </PanelSectionRow>
         <PanelSectionRow>
           <ToggleField
             label='Restore when a game launches'
-            checked={false}
+            checked={settings?.auto_restore ?? false}
+            disabled={!settings}
+            onChange={v => update('auto_restore', v)}
           />
         </PanelSectionRow>
         <PanelSectionRow>
