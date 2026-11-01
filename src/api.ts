@@ -8,6 +8,7 @@ export type Settings = {
   auto_restore: boolean;
 }
 
+export const isInstalled = callable<[], boolean>('is_installed');
 export const getSettings = callable<[], Settings>('get_settings');
 export const setSetting = callable<[key: keyof Settings, value: boolean], Settings>('set_setting');
 export const onLaunch = callable<[appId: string]>('on_launch');

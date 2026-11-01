@@ -2,21 +2,27 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { toaster } from '@decky/api';
-import { getSettings, setSetting, type Settings } from '../api';
+import { getSettings, isInstalled, setSetting, type Settings } from '../api';
 import { ButtonItem, PanelSection, PanelSectionRow, ToggleField } from '@decky/ui';
 import { useEffect, useState } from 'react';
 
 export function Panel() {
   const [busy, setBusy] = useState(false);
+  const [installed, setInstalled] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
+    isInstalled()
+      .then(v => {
+        if (!cancelled) setInstalled(v);
+      });
+
     getSettings()
       .then(s => {
-        if (!cancelled) setSettings(s)
-      })
+        if (!cancelled) setSettings(s);
+      });
 
     return () => {
       cancelled = true;
@@ -33,6 +39,12 @@ export function Panel() {
       toaster.toast({ title: 'Error', body: 'Failed to save configuration.' });
     }
   }
+
+  if (!installed) return (
+    <PanelSection>
+      <PanelSectionRow>Aletheia is not installed. Install it, then reload the plugin,</PanelSectionRow>
+    </PanelSection>
+  );
 
   return (
     <>
