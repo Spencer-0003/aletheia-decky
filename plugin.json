@@ -1,4 +1,6 @@
 {
   "name": "Aletheia",
-  "author": "Spencer"
+  "author": "Spencer",
+  "api_version": 2,
+  "flags": []
 }
