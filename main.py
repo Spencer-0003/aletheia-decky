@@ -5,16 +5,19 @@ from pathlib import Path
 
 import decky
 from config import SettingsStore
+from engine import Engine
 
-TOAST_EVENT = 'aletheia.toast'
+# TOAST_EVENT = 'aletheia.toast'
 
-async def notify(title: str, body: str) -> None:
-    await decky.emit(TOAST_EVENT, title, body)
+# async def notify(title: str, body: str) -> None:
+#     await decky.emit(TOAST_EVENT, title, body)
 
 class Plugin:
+    engine: Engine
     settings: SettingsStore
 
     async def _main(self):
+        self.engine = Engine()
         self.settings = SettingsStore(Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / 'settings.json')
 
     async def get_settings(self) -> dict[str, bool]:
@@ -24,8 +27,8 @@ class Plugin:
         self.settings.set(key, value)
         return self.settings.all()
 
-    async def on_launch(self, appId: str):
-        await notify('Game started', appId)
+    async def on_launch(self, app_id: str):
+        await Engine.on_launch(app_id)
 
-    async def on_exit(self, appId: str):
-        await notify('Game exited', appId)
+    async def on_exit(self, app_id: str):
+        await Engine.on_exit(app_id)
