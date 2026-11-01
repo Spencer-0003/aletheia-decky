@@ -14,12 +14,9 @@ export default definePlugin(() => {
 
   addEventListener(TOAST_EVENT, onToast);
 
-  const launchHook = SteamClient.Apps.RegisterForGameActionStart((_actionId, appId, action) => {
-    if (action == 'launchApp') onLaunch(appId);
-  });
-
-  const exitHook = SteamClient.GameSessions.RegisterForAppLifetimeNotifications(notification => {
-    if (!notification.bRunning) onExit(notification.unAppID.toString());
+  const lifetimeHook = SteamClient.GameSessions.RegisterForAppLifetimeNotifications(notification => {
+    if (notification.bRunning) onLaunch(notification.unAppID.toString());
+    else onExit(notification.unAppID.toString());
   });
 
   return {
@@ -28,8 +25,7 @@ export default definePlugin(() => {
     icon: <FaSave />,
     content: <Panel />,
     onDismount() {
-      launchHook.unregister();
-      exitHook.unregister();
+      lifetimeHook.unregister();
       removeEventListener(TOAST_EVENT, onToast);
     }
   };
