@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { toaster } from '@decky/api';
-import { getSettings, isInstalled, setSetting, type Settings } from '../api';
+import { backupAll, getSettings, isInstalled, setSetting, type Settings } from '../api';
 import { ButtonItem, PanelSection, PanelSectionRow, ToggleField } from '@decky/ui';
 import { useEffect, useState } from 'react';
+import { setBusy, useBusy } from '../state';
 
 export function Panel() {
-  const [busy, setBusy] = useState(false);
+  const busy = useBusy();
   const [installed, setInstalled] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
 
@@ -40,6 +41,12 @@ export function Panel() {
     }
   }
 
+  const onBackupAll = async () => {
+    setBusy(true);
+    await backupAll();
+    setBusy(false);
+  }
+
   if (!installed) return (
     <PanelSection>
       <PanelSectionRow>Aletheia is not installed. Install it, then reload the plugin,</PanelSectionRow>
@@ -66,7 +73,7 @@ export function Panel() {
           />
         </PanelSectionRow>
         <PanelSectionRow>
-          <ButtonItem layout='below' disabled={busy}>
+          <ButtonItem layout='below' disabled={busy} onClick={onBackupAll}>
             {busy ? 'Backing up…' : 'Back up all games'}
           </ButtonItem>
         </PanelSectionRow>
