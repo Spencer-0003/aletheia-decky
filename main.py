@@ -35,3 +35,6 @@ class Plugin:
 
     async def on_exit(self, app_id: str):
         await Engine.on_exit(app_id)
+
+    async def backup_all(self):
+        return await self.engine.backup_all()
