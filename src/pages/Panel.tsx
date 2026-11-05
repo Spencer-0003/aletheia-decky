@@ -43,7 +43,10 @@ export function Panel() {
 
   const onBackupAll = async () => {
     setBusy(true);
-    await backupAll();
+
+    const error = await backupAll();
+    toaster.toast(error ? { title: 'Error', body: error } : { title: 'Aletheia', body: 'Backup successful.' });
+
     setBusy(false);
   }
 
