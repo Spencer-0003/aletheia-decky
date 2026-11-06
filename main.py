@@ -21,7 +21,7 @@ class Plugin:
         self.settings = SettingsStore(Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / 'settings.json')
 
     async def is_installed(self) -> bool:
-        return await self.engine.is_installed()
+        return self.engine.is_installed()
 
     async def get_settings(self) -> dict[str, bool]:
         return self.settings.all()
@@ -37,4 +37,4 @@ class Plugin:
         await Engine.on_exit(app_id)
 
     async def backup_all(self):
-        return await self.engine.backup_all()
+        return self.engine.backup_all()
