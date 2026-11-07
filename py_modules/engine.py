@@ -37,10 +37,16 @@ class Engine:
 
         return shlex.join([flatpak, 'run', FLATPAK_ID]) if result.returncode == 0 else None
 
-    async def _run(self, *args: str, timeout: float) -> int:
+    async def _run(self, *args: str, timeout: float, env: dict[str, str] | None) -> int:
+        argv = shlex.split(self.command)
+
+        if env and os.path.basename(argv[0]) == 'flatpak':
+            argv[2:2] = [f'--env={key}={value}' for key, value in env.items()]
+
         process = await asyncio.create_subprocess_exec(
-            *shlex.split(self.command),
+            *argv,
             *args,
+            env={**os.environ, **(env or {})},
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.DEVNULL,
@@ -58,16 +64,27 @@ class Engine:
     async def is_installed(self) -> bool:
         return self.command is not None
 
-    async def backup_all(self) -> str | None:
+    async def _action(self, command: str, *args: str, timeout: float, env: dict[str, str] | None = None) -> str | None:
         try:
-            code = await self._run('backup', timeout=10)
+            code = await self._run(command, *args, timeout=timeout, env=env)
         except:
             return 'Aletheia took too long and was stopped'
 
         return None if code == 0 else f'Aletheia exited with code {code}'
 
+    async def backup_all(self) -> str | None:
+        return await self._action('backup', timeout=10)
+
+    async def backup_game(self, app_id: str) -> str | None:
+        # Aletheia doesn't support passing steam IDs to the backup command so this is a hacky workaround
+        return await self._action('backup', '--infer', 'steam', timeout=5, env={'SteamAppId': app_id})
+
+    async def restore_game(self, app_id: str) -> str | None:
+        # Same workaround for restore
+        return await self._action('restore', '--infer', 'steam', timeout=5, env={'SteamAppId': app_id})
+
     async def on_launch(self, app_id: str):
-        pass
+        return await self.restore_game(app_id)
 
     async def on_exit(self, app_id: str):
-        pass
+        return await self.backup_game(app_id)
