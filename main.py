@@ -7,10 +7,10 @@ import decky
 from config import SettingsStore
 from engine import Engine
 
-# TOAST_EVENT = 'aletheia.toast'
+TOAST_EVENT = 'aletheia.toast'
 
-# async def notify(title: str, body: str) -> None:
-#     await decky.emit(TOAST_EVENT, title, body)
+async def notify(title: str, body: str) -> None:
+    await decky.emit(TOAST_EVENT, title, body)
 
 class Plugin:
     engine: Engine
@@ -31,10 +31,18 @@ class Plugin:
         return self.settings.all()
 
     async def on_launch(self, app_id: str):
-        await Engine.on_launch(app_id)
+        if not await self.is_installed() or not self.settings.get('auto_restore'):
+            return
+
+        error = await self.engine.on_launch(app_id)
+        await notify('Aletheia', error or 'Game restored.')
 
     async def on_exit(self, app_id: str):
-        await Engine.on_exit(app_id)
+        if not await self.is_installed() or not self.settings.get('auto_backup'):
+            return
+
+        error = await self.engine.on_exit(app_id)
+        await notify('Aletheia', error or 'Game backed up.')
 
     async def backup_all(self):
         return await self.engine.backup_all()
